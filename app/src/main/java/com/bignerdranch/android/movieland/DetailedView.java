@@ -115,8 +115,7 @@ public class DetailedView extends AppCompatActivity implements
                         .into(mPoster);
             }
         }
-        mReviewAdapter.setData(mMovie.getReview());
-        mTrailerAdapter.setData(mMovie.getTrailer());
+
         mReviewList.setAdapter(mReviewAdapter);
         mTrailerList.setAdapter(mTrailerAdapter);
         loadItems(BUNDLE_QUERY_REVIEW, getString(mMovie.getId()));
@@ -202,6 +201,9 @@ public class DetailedView extends AppCompatActivity implements
     public void onLoadFinished(Loader<MovieExtraDetails> loader, MovieExtraDetails data) {
         mProgressBarTrailer.setVisibility(View.INVISIBLE);
         mProgressBarReview.setVisibility(View.INVISIBLE);
+
+
+
         if (data.getR().size() < 0 || data.getR() == null){
             showErro(BUNDLE_QUERY_REVIEW);
         }else {mReviewAdapter.setData(data.getR());}
