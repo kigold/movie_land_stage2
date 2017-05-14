@@ -87,4 +87,9 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.MovieRevie
         }
         return 0;
     }
+
+    public void setData(ArrayList<MovieReview> moviesData){
+        mReviewData = moviesData;
+        notifyDataSetChanged();
+    }
 }

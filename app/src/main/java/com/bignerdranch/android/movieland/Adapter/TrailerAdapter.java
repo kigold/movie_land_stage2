@@ -94,4 +94,9 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.MovieTra
         }
         return 0;
     }
+
+    public void setData(ArrayList<MovieTrailer> moviesData){
+        mTrailerData = moviesData;
+        notifyDataSetChanged();
+    }
 }

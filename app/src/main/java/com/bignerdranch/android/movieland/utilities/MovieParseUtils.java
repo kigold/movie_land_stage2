@@ -44,42 +44,6 @@ public class MovieParseUtils {
                     ,mv.getDouble("popularity")
                     ,mv.toString());
 
-                    //get movie Review
-                    /*ArrayList<MovieReview> mR;
-                    String query = "reviews";
-                    String movieId = "" + movie.getId();
-                    URL movieReqestUrl = NetworkUtils.buildUrlForItem(query, movieId);
-                    try {
-                        String jsonMovieResponse = NetworkUtils
-                                .getResponseFromHttpUrl(movieReqestUrl);
-
-                        mR = MovieParseUtils
-                                .getMovieReviewFromHttpRequest(context, jsonMovieResponse);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        mR = null;
-                    }
-                    //get Trailer
-                    ArrayList<MovieTrailer> mT;
-                    query = "videos";
-                    movieId = "" + movie.getId();
-                    movieReqestUrl = NetworkUtils.buildUrlForItem(query, movieId);
-                    try {
-                        String jsonMovieResponse = NetworkUtils
-                                .getResponseFromHttpUrl(movieReqestUrl);
-
-                        mT = MovieParseUtils
-                                .getMovieTrailerFromHttpRequest(context, jsonMovieResponse);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        mT = null;
-                    }*/
-
-                    //add movie to List
-                    //movie.setReview(mR);
-                    //movie.setTrailer(mT);
-                    movie.setReview(new ArrayList<MovieReview>());
-                    movie.setTrailer(new ArrayList<MovieTrailer>());
                     movies.add(movie);
                 }
             }

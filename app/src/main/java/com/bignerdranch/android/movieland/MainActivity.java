@@ -2,6 +2,7 @@ package com.bignerdranch.android.movieland;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,6 +20,7 @@ import com.bignerdranch.android.movieland.Adapter.MovieAdapter;
 import com.bignerdranch.android.movieland.dataType.MovieDataType;
 import com.bignerdranch.android.movieland.utilities.AsyncTaskGetMoviesLoader;
 import com.bignerdranch.android.movieland.utilities.MovieParseUtils;
+import com.bignerdranch.android.movieland.utilities.MoviePreference;
 import com.bignerdranch.android.movieland.utilities.NetworkUtils;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.AsyncTaskLoader;
@@ -28,8 +30,8 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements
         MovieAdapter.MovieAdapterOnClickHandler
-        //,LoaderManager.LoaderCallbacks<MovieDataType>
         ,LoaderCallbacks<ArrayList<MovieDataType>>
+        ,SharedPreferences.OnSharedPreferenceChangeListener
 
 {
 
@@ -100,6 +102,7 @@ public class MainActivity extends AppCompatActivity implements
 
             @Override
             protected void onStartLoading() {
+
                 if (mMovieData != null){
                     deliverResult(mMovieData);
                 }else{
@@ -107,7 +110,6 @@ public class MainActivity extends AppCompatActivity implements
                     forceLoad();
                 }
             }
-
             @Override
             public ArrayList<MovieDataType> loadInBackground() {
                 URL movieReqestUrl = NetworkUtils.buildUrl(mSort_choice);
@@ -135,11 +137,11 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onLoadFinished(android.support.v4.content.Loader<ArrayList<MovieDataType>> loader, ArrayList<MovieDataType> data) {
         mProgressBar.setVisibility(View.INVISIBLE);
-        mMovieAdapter.setData(mMovie);
 
-        if (null == data) {
+        if (data == null) {
             showErro();
         } else {
+            mMovieAdapter.setData(mMovie);
             showMovieDataView();
         }
     }
@@ -168,45 +170,31 @@ public class MainActivity extends AppCompatActivity implements
     private void loadMovieData(String choice) {
         showMovieDataView();
         //TODO get menu sort item from persistent data source
-        String sort_choice = "top_rated";
+        //set Prefecen sort moview value
+        mSort_choice = MoviePreference.getSortOrder(this) ;//"top_rated";
 
         if (choice != null) {
-            sort_choice = choice;
             mSort_choice = choice;
+            // TODO set pref value
 
         }
         // "popular" or "top_rated"
+        Bundle bundle = new Bundle();
+        bundle.putString(BUNDLE_SORT_CHOICE,mSort_choice);
+        //fresh load
         if (mMovie == null){
             //new GetMoviesTask(this, new GetMovieTaskCompleteListner()).execute(sort_choice);
             //new GetMoviesTaskLoader(this, new GetMovieTaskCompleteListener()).forceLoad();
-            LoaderCallbacks<ArrayList<MovieDataType>> callback = MainActivity.this;
+            //LoaderCallbacks<ArrayList<MovieDataType>> callback = MainActivity.this;
 
-            getSupportLoaderManager().initLoader(0, null, callback).forceLoad();
+            getSupportLoaderManager().initLoader(MOVIE_LOADER_ID, bundle, this).forceLoad();
         }
         else{
             //from savedStateInstance
-            mMovieAdapter.setData(mMovie);
+            //mMovieAdapter.setData(mMovie);
+            getSupportLoaderManager().restartLoader(MOVIE_LOADER_ID, bundle, this).forceLoad();
         }
     }
-
-    /*public class GetMovieTaskLoaderCompleteListner implements AsyncTaskGetMoviesLoader<ArrayList<MovieDataType>>
-    {
-        @Override
-        public void beforeTask() {
-            mProgressBar.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        public void onTaskComplete(ArrayList<MovieDataType> moviesData) {
-            mProgressBar.setVisibility(View.INVISIBLE);
-            if (moviesData != null) {
-                showMovieDataView();
-                mMovieAdapter.setData(moviesData);
-            }else{
-                showErro();
-            }
-        }
-    }*/
 
 
     @Override
@@ -234,24 +222,6 @@ public class MainActivity extends AppCompatActivity implements
         mRecyclerView.setVisibility(View.INVISIBLE);
     }
 
-    public class GetMovieTaskCompleteListener implements AsyncTaskGetMoviesLoader<ArrayList<MovieDataType>>{
-        @Override
-        public void onTaskComplete(ArrayList<MovieDataType> moviesData) {
-            mProgressBar.setVisibility(View.INVISIBLE);
-            if (moviesData != null) {
-                showMovieDataView();
-                mMovie = moviesData;
-                mMovieAdapter.setData(mMovie);
-            }else{
-                showErro();
-            }
-        }
-
-        @Override
-        public void beforeTask() {
-            mProgressBar.setVisibility(View.VISIBLE);
-        }
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -319,4 +289,8 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        //loadMovieData(key);
+    }
 }
