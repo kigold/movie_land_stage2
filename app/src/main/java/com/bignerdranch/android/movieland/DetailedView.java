@@ -52,7 +52,7 @@ public class DetailedView extends AppCompatActivity implements
     private TrailerAdapter mTrailerAdapter;
     private final String BUNDLE_MOVIE_ID = "bundle_movie_id";
     private final String BUNDLE_QUERY_TYPE = "bundle_query_type";
-    private final String BUNDLE_QUERY_VIDEO = "vidoes";
+    private final String BUNDLE_QUERY_VIDEO = "videos";
     private final String BUNDLE_QUERY_REVIEW = "reviews";
     private final String ERROR_MESSAGE = "No Data Availabel";
     private final String BUNDLE_GRID_SIZE = "bundle_grid_size";
@@ -75,9 +75,8 @@ public class DetailedView extends AppCompatActivity implements
         mPoster = (ImageView) findViewById(R.id.iv_dv_poster);
         mErrorMessageReview = (TextView) findViewById(R.id.tv_review_header);
         mErrorMessageTrailer = (TextView) findViewById(R.id.tv_trailer_header);
-        //mReview = (TextView) findViewById(R.id.tv_review);
-        //mTrailerThumb = (ImageView) findViewById(R.id.ib_trailer_thumb);
-        //mProgressBar = (ProgressBar) findViewById(R.id.pb_progress_bar_dv);
+        mProgressBarReview = (ProgressBar) findViewById(R.id.pb_progress_bar_review);
+        mProgressBarTrailer = (ProgressBar) findViewById(R.id.pb_progress_bar_trailer);
 
         mReviewList = (RecyclerView) findViewById(R.id.rv_review);
         mTrailerList = (RecyclerView) findViewById(R.id.rv_trailer);
@@ -93,15 +92,15 @@ public class DetailedView extends AppCompatActivity implements
         LinearLayoutManager layoutManagerTrailer
                 = new LinearLayoutManager(this, recyclerViewOrientation, shouldReverseLayout);
         mTrailerAdapter = new TrailerAdapter(this);
-        mReviewList.setLayoutManager(layoutManagerTrailer);
+        mTrailerList.setLayoutManager(layoutManagerTrailer);
         mTrailerList.setHasFixedSize(true);
 
         Intent intentOrigin = getIntent();
 
         if (intentOrigin != null) {
-            if (intentOrigin.hasExtra(MOVIE_DATA_FOR_INTENT)) {                //String movieAsJson = intentOrigin.getStringExtra(MOVIE_DATA_FOR_INTENT);
-                MovieDataType mMovie = intentOrigin.getParcelableExtra(MOVIE_DATA_FOR_INTENT);
-                //mMovie = MovieDataType.getMovieFromJson(movieAsJson);
+            if (intentOrigin.hasExtra(MOVIE_DATA_FOR_INTENT)) {
+                mMovie = intentOrigin.getParcelableExtra(MOVIE_DATA_FOR_INTENT);
+
                 mTitle.setText(mMovie.getOriginal_title());
                 mSynopsis.setText(mMovie.getSynopsis());
                 mReleaseDate.setText(mMovie.getRelease_date());
@@ -115,11 +114,10 @@ public class DetailedView extends AppCompatActivity implements
                         .into(mPoster);
             }
         }
-
-        mReviewList.setAdapter(mReviewAdapter);
         mTrailerList.setAdapter(mTrailerAdapter);
-        loadItems(BUNDLE_QUERY_REVIEW, getString(mMovie.getId()));
-        loadItems(BUNDLE_QUERY_VIDEO, getString(mMovie.getId()));
+        mReviewList.setAdapter(mReviewAdapter);
+        loadItems(BUNDLE_QUERY_REVIEW, "" + mMovie.getId());
+        loadItems(BUNDLE_QUERY_VIDEO, "" + mMovie.getId());
 
 
     }
@@ -138,8 +136,8 @@ public class DetailedView extends AppCompatActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        loadItems(BUNDLE_QUERY_REVIEW, getString(mMovie.getId()));
-        loadItems(BUNDLE_QUERY_VIDEO, getString(mMovie.getId()));
+        //loadItems(BUNDLE_QUERY_REVIEW, getString(mMovie.getId()));
+        //loadItems(BUNDLE_QUERY_VIDEO, getString(mMovie.getId()));
     }
 
     //Trailer and Review Loader
@@ -204,13 +202,12 @@ public class DetailedView extends AppCompatActivity implements
 
 
 
-        if (data.getR().size() < 0 || data.getR() == null){
+        if (data.getR() == null){
             showErro(BUNDLE_QUERY_REVIEW);
         }else {mReviewAdapter.setData(data.getR());}
-        if (data.getT().size() < 0 || data.getT() == null){
+        if (data.getT() == null){
             showErro(BUNDLE_QUERY_REVIEW);
-        }else{
-            mTrailerAdapter.setData(data.getT());
+        }else{mTrailerAdapter.setData(data.getT());
             }
     }
 
@@ -237,4 +234,5 @@ public class DetailedView extends AppCompatActivity implements
             mErrorMessageTrailer.setText(ERROR_MESSAGE);
         }
     }
+
 }

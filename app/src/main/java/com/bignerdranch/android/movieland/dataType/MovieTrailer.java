@@ -8,7 +8,7 @@ import android.os.Parcelable;
  */
 
 public class MovieTrailer implements Parcelable {
-    String id, key, name, site, type, movieId, url;
+    String id, key, name, site, type, movieId, url, imgUrl;
 
     public MovieTrailer(String id, String key, String name, String site, String type) {
         this.id = id;
@@ -16,10 +16,20 @@ public class MovieTrailer implements Parcelable {
         this.name = name;
         this.site = site;
         this.type = type;
+        setUrl(null);
+        setImgUrl("http://img.youtube.com/vi/" + key +"/default.jpg");
     }
 
     public String getUrl() {
         return url;
+    }
+
+    public String getImgUrl() {
+        return imgUrl;
+    }
+
+    public void setImgUrl(String imgUrl) {
+        this.imgUrl = imgUrl;
     }
 
     public void setUrl(String url) {
@@ -87,6 +97,8 @@ public class MovieTrailer implements Parcelable {
         dest.writeString(this.site);
         dest.writeString(this.type);
         dest.writeString(this.movieId);
+        dest.writeString(this.url);
+        dest.writeString(this.imgUrl);
     }
 
     protected MovieTrailer(Parcel in) {
@@ -96,9 +108,11 @@ public class MovieTrailer implements Parcelable {
         this.site = in.readString();
         this.type = in.readString();
         this.movieId = in.readString();
+        this.url = in.readString();
+        this.imgUrl = in.readString();
     }
 
-    public static final Parcelable.Creator<MovieTrailer> CREATOR = new Parcelable.Creator<MovieTrailer>() {
+    public static final Creator<MovieTrailer> CREATOR = new Creator<MovieTrailer>() {
         @Override
         public MovieTrailer createFromParcel(Parcel source) {
             return new MovieTrailer(source);

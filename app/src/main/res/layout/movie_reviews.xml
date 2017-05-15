@@ -12,13 +12,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/tv_review_content"
-        android:textSize="@dimen/medium_text"
+        android:textSize="@dimen/small_text"
         android:layout_weight="1"/>
     <TextView
         android:text="@string/review"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/tv_review_author"
-        android:textSize="@dimen/small_text"
+        android:textSize="@dimen/tiny_text"
         android:layout_weight="1"/>
 </LinearLayout>
