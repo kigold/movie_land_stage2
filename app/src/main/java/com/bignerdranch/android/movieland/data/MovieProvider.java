@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 import android.os.CancellationSignal;
@@ -18,31 +19,19 @@ import android.text.TextUtils;
  */
 
 public class MovieProvider  extends ContentProvider{
-
     public static final int CODE_MOVIE = 100;
+    public static final int CODE_MOVIE_ID = 101;
     public static final int BULK_INSERT_FAV_MOVIES = 200;
-    public static final int DELETE_MOVIE = 300;
-    public static final int UPDATE_MOVIE = 400;
-
-    public static final int MOVIE_WITH_ID = 500;
-
 
     private static final UriMatcher sUriMatcher = buildUriMatcher();
 
     MovieDbHelper mOpenHelper;
 
     public static UriMatcher buildUriMatcher() {
-
-
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
         final String authority = MovieContract.CONTENT_AUTHORITY;
-
-
-
-
-        matcher.addURI(authority, MovieContract.PATH_MOVIE, CODE_MOVIE);
-
-        matcher.addURI(authority, MovieContract.PATH_MOVIE + "/#", MOVIE_WITH_ID);
+        matcher.addURI(authority, MovieContract.PATH_FAVORITES, CODE_MOVIE);
+        matcher.addURI(authority, MovieContract.PATH_FAVORITES + "/#", CODE_MOVIE_ID);
 
         return matcher;
     }
@@ -105,19 +94,37 @@ public class MovieProvider  extends ContentProvider{
     @Nullable
     @Override
     public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        Cursor cursor;
-
+        Cursor cursor = null;
+        final SQLiteDatabase db = mOpenHelper.getReadableDatabase();
         switch (sUriMatcher.match(uri)){
             case CODE_MOVIE: {
+                try{
+                    cursor = db.query(MovieContract.MovieEntry.TABLE_NAME,
+                            projection,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null);
 
-                cursor = mOpenHelper.getReadableDatabase().query(
-                        MovieContract.MovieEntry.TABLE_NAME,
-                        projection,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+                break;
+            }
+            case CODE_MOVIE_ID: {
+                try {
+                    cursor = db.query(MovieContract.MovieEntry.TABLE_NAME,
+                            projection,
+                            null,
+                            null,
+                            null,
+                            null,
+                            MovieContract.MovieEntry._ID);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
             }
             default:
@@ -138,7 +145,7 @@ public class MovieProvider  extends ContentProvider{
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         int count = 0;
             switch (sUriMatcher.match(uri)) {
-                case UPDATE_MOVIE:
+                case CODE_MOVIE:
                     count = db.update(MovieContract.MovieEntry.TABLE_NAME, values,
                             MovieContract.MovieEntry._ID + " = " + uri.getPathSegments().get(1) +
                                     (!TextUtils.isEmpty(selection) ?
@@ -157,9 +164,9 @@ public class MovieProvider  extends ContentProvider{
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         int count = 0;
         switch (sUriMatcher.match(uri)){
-            case DELETE_MOVIE:
+            case CODE_MOVIE_ID:
                 String id = uri.getPathSegments().get(1);
-                count = db.delete( MovieContract.MovieEntry.TABLE_NAME, MovieContract.MovieEntry._ID
+                count = db.delete( MovieContract.MovieEntry.TABLE_NAME, MovieContract.MovieEntry.COLUMN_MOVIE_ID
                         +  " = " + id +
                                 (!TextUtils.isEmpty(selection) ?
                        " AND (" + selection + ')' : ""), selectionArgs);

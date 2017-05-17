@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">MovieLand</string>
     <string name="menu_title">Movie Land</string>
+    <string name="menu_fav">Favorite</string>
     <string name="review">Review</string>
     <string name="trailer">Trailer</string>
     <string name="menu_sort">Sort Movie List</string>
@@ -8,10 +9,12 @@
     <string name="menu_grid_size">Grid Size</string>
     <string name="menu_sort_popular">popular</string>
     <string name="menu_sort_rated">top_rated</string>
+    <string name="default_grid_size">2</string>
     <string name="menu_two">2</string>
     <string name="menu_three">3</string>
     <string name="menu_four">4</string>
     <string name="menu_five">5</string>
     <string name="error_msg">ERROR, Data from source cannot be retrieved at this time, Ensure your phone is connected to the internet and try again</string>
-    <string name="content_authority">com.bignerdranch.android.movieland</string>
+    <string name="content_authority">com.example.android.MovieProvider</string>
+    <string name="content_authority2">com.bignerdranch.android.MovieProvider</string>
 </resources>

@@ -13,12 +13,12 @@ import java.util.ArrayList;
 
 public class MovieDataType implements Parcelable {
     private String original_title, synopsis;
-    private double user_rating;
+    private Double user_rating;
     private String release_date;
     private String poster_image;
-    private double popularity;
+    private Double popularity;
+    private Integer id;
     private String asJsonData;
-    private int id;
     private ArrayList<MovieReview> review;
     private ArrayList<MovieTrailer> trailer;
 

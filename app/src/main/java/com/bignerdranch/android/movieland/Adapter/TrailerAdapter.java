@@ -84,7 +84,7 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.MovieTra
                 Toast.makeText(view.getContext(), "Trailer Should be Playing now" ,Toast.LENGTH_SHORT).show();
                 Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(view.getTag().toString()));
                 view.getContext().startActivity(appIntent);
-                
+
 
             }
         });

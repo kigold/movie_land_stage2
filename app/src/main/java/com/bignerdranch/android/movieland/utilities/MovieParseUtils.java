@@ -1,7 +1,9 @@
 package com.bignerdranch.android.movieland.utilities;
 
 import android.content.Context;
+import android.database.Cursor;
 
+import com.bignerdranch.android.movieland.data.MovieContract;
 import com.bignerdranch.android.movieland.dataType.MovieDataType;
 import com.bignerdranch.android.movieland.dataType.MovieReview;
 import com.bignerdranch.android.movieland.dataType.MovieTrailer;
@@ -16,6 +18,8 @@ import java.util.ArrayList;
 /**
  * Created by Kigold on 4/14/2017.
  */
+
+import com.bignerdranch.android.movieland.data.MovieContract.MovieEntry;
 
 public class MovieParseUtils {
 
@@ -50,6 +54,23 @@ public class MovieParseUtils {
         }
         return movies;
     }
+
+    public static ArrayList<MovieDataType> getMovieFromFavorite (Cursor cursor){
+        ArrayList<MovieDataType> movie = null;
+        while (cursor.moveToNext()){
+
+            MovieDataType m = new MovieDataType(cursor.getInt(cursor.getColumnIndexOrThrow(MovieEntry.COLUMN_MOVIE_ID))
+                                    ,cursor.getString(cursor.getColumnIndexOrThrow(MovieEntry.COLUMN_ORIGINAL_TITLE))
+                                    ,cursor.getString(cursor.getColumnIndexOrThrow(MovieEntry.COLUMN_SYNOPSIS))
+                                    ,cursor.getDouble(cursor.getColumnIndexOrThrow(MovieEntry.COLUMN_USER_RATING))
+                                    ,cursor.getString(cursor.getColumnIndexOrThrow(MovieEntry.COLUMN_RELEASE_DATE))
+                                    ,cursor.getString(cursor.getColumnIndexOrThrow(MovieEntry.COLUMN_POSTER_IMAGE))
+                                    ,cursor.getDouble(cursor.getColumnIndexOrThrow(MovieEntry.COLUMN_POPULARITY)), null);
+            movie.add(m);
+        }
+        return movie;
+    }
+
     public static ArrayList<MovieReview> getMovieReviewFromHttpRequest(Context context, String raw_movies)
             throws JSONException    {
         ArrayList<MovieReview> movies = new ArrayList<>();

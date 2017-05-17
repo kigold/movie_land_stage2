@@ -8,7 +8,7 @@
     <LinearLayout
       android:orientation="vertical"
       android:layout_width="match_parent"
-      android:layout_height="match_parent">
+      android:layout_height="wrap_content">
 
         <LinearLayout
             android:orientation="horizontal"
@@ -17,18 +17,33 @@
             android:paddingLeft="@dimen/light_padding"
             android:paddingTop="@dimen/light_padding">
 
-            <ImageView
-                android:layout_gravity="start"
-                android:background="@drawable/rounded_corner"
-                app:srcCompat="@mipmap/ic_launcher"
-                android:id="@+id/iv_dv_poster"
-                android:layout_weight="1"
-                android:layout_height="@dimen/iv_height"
-                android:layout_width="@dimen/iv_width"/>
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <ImageView
+                    android:layout_gravity="start"
+                    android:background="@drawable/rounded_corner"
+                    app:srcCompat="@mipmap/ic_launcher"
+                    android:id="@+id/iv_dv_poster"
+                    android:layout_height="wrap_content"
+                    android:layout_width="134dp"
+                    android:adjustViewBounds="true"/>
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@android:drawable/btn_star_big_on"
+                    android:id="@+id/ib_fav_button"
+                    android:layout_weight="1"/>
+
+            </LinearLayout>
 
             <LinearLayout
                 android:orientation="vertical"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:paddingLeft="@dimen/heavy_padding">
@@ -36,7 +51,7 @@
                 <TextView
                     android:text="TextView"
                     android:textSize="@dimen/large_text"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/tv_dv_title"
                     android:paddingBottom="@dimen/light_padding"/>
@@ -61,6 +76,7 @@
                     android:id="@+id/tv_dv_popularity"
                     android:paddingBottom="@dimen/light_padding"/>
             </LinearLayout>
+
         </LinearLayout>
 
         <TextView

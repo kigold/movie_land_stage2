@@ -3,6 +3,7 @@ package com.bignerdranch.android.movieland;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -17,6 +18,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bignerdranch.android.movieland.Adapter.MovieAdapter;
+import com.bignerdranch.android.movieland.data.MovieContract;
+import com.bignerdranch.android.movieland.data.MovieProvider;
 import com.bignerdranch.android.movieland.dataType.MovieDataType;
 import com.bignerdranch.android.movieland.utilities.AsyncTaskGetMoviesLoader;
 import com.bignerdranch.android.movieland.utilities.MovieParseUtils;
@@ -40,9 +43,13 @@ public class MainActivity extends AppCompatActivity implements
     private TextView mErrorMessage;
     private ProgressBar mProgressBar;
     private ArrayList<MovieDataType> mMovie;
-    private String mSort_choice = "top_rated";
+    private String mSort_choice;
+
     private int NUMBER_OF_ITEMS_IN_GRIDVIEW = 2;
-    private int mGrid_size = NUMBER_OF_ITEMS_IN_GRIDVIEW;
+    //private int mGrid_size = NUMBER_OF_ITEMS_IN_GRIDVIEW;
+    private String mGrid_size;
+    private final String SORT_TOP_RATED = "top_rated";
+    private final String SORT_POPULAR = "popular";
     private final String MOVIE_DATA_FOR_INTENT = "MOVIE_DATA";
     private final String BUNDLE_RECYCLER_LAYOUT = "bundle_recycle_layout";
     private final String BUNDLE_RECYCLER_MOVIEDATA = "bundle_movie_data";
@@ -58,11 +65,14 @@ public class MainActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mSort_choice = MoviePreference.getSortOrder(this);
+        mGrid_size = MoviePreference.getGridSize(this);
+
         mRecyclerView = (RecyclerView) findViewById(R.id.rv_movie_recycle_view);
         mErrorMessage = (TextView) findViewById(R.id.tv_errro_msg);
 
         mMovieAdapter = new MovieAdapter(this);
-        GridLayoutManager layoutManager = new GridLayoutManager(this, NUMBER_OF_ITEMS_IN_GRIDVIEW);
+        GridLayoutManager layoutManager = new GridLayoutManager(this, Integer.parseInt(mGrid_size));
         mRecyclerView.setLayoutManager(layoutManager);
 
         mRecyclerView.setHasFixedSize(true);
@@ -78,8 +88,8 @@ public class MainActivity extends AppCompatActivity implements
             mRecyclerView.getLayoutManager().onRestoreInstanceState(savedRecyclerViewState);
             mMovie = savedInstanceState.getParcelableArrayList(BUNDLE_RECYCLER_MOVIEDATA);
             mSort_choice = savedInstanceState.getString(BUNDLE_SORT_CHOICE);
-            mGrid_size = savedInstanceState.getInt(BUNDLE_GRID_SIZE, NUMBER_OF_ITEMS_IN_GRIDVIEW);
-            resizeGrid(mGrid_size);
+            mGrid_size = savedInstanceState.getString(BUNDLE_GRID_SIZE, "" + NUMBER_OF_ITEMS_IN_GRIDVIEW);
+            resizeGrid(Integer.parseInt(mGrid_size));
             loadMovieData(mSort_choice);
         }
         else
@@ -89,7 +99,8 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         int loaderId = MOVIE_LOADER_ID;
-        Bundle bundleForLoader = null;
+        Bundle bundleForLoader = new Bundle();
+        bundleForLoader.putString(BUNDLE_SORT_CHOICE,mSort_choice);
         LoaderCallbacks<ArrayList<MovieDataType>> callback = MainActivity.this;
 
         getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callback);
@@ -113,17 +124,31 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public ArrayList<MovieDataType> loadInBackground() {
                 URL movieReqestUrl = NetworkUtils.buildUrl(mSort_choice);
-                try {
-                    String jsonMovieResponse = NetworkUtils
-                            .getResponseFromHttpUrl(movieReqestUrl);
+                if (mSort_choice != getString(R.string.menu_fav)) {
+                    try {
+                        String jsonMovieResponse = NetworkUtils
+                                .getResponseFromHttpUrl(movieReqestUrl);
 
-                    ArrayList<MovieDataType> movies = MovieParseUtils
-                            .getMovieFromHttpRequest(MainActivity.this, jsonMovieResponse);
-                    return movies;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return null;
+                        ArrayList<MovieDataType> movies = MovieParseUtils
+                                .getMovieFromHttpRequest(MainActivity.this, jsonMovieResponse);
+                        return movies;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return null;
+                    }
                 }
+                else if (mSort_choice == getString(R.string.menu_fav)){
+                    try{
+                        Cursor cursor = getContentResolver().query(MovieContract.MovieEntry.CONTEXT_URI, null, null, null, null);
+                        /*MovieProvider mp = new MovieProvider();
+                        Cursor cursor = mp.query(MovieContract.MovieEntry.CONTEXT_URI, null, null, null, null);*/
+                        return MovieParseUtils.getMovieFromFavorite(cursor);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                        return null;
+                    }
+                }
+                return null;
             }
 
             @Override
@@ -158,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements
         outState.putParcelable(BUNDLE_RECYCLER_LAYOUT, mRecyclerView.getLayoutManager().onSaveInstanceState());
         outState.putParcelableArrayList(BUNDLE_RECYCLER_MOVIEDATA, mMovie);
         outState.putString(BUNDLE_SORT_CHOICE, mSort_choice);
-        outState.putInt(BUNDLE_GRID_SIZE, mGrid_size);
+        outState.putString(BUNDLE_GRID_SIZE, mGrid_size);
     }
 
 
@@ -169,13 +194,13 @@ public class MainActivity extends AppCompatActivity implements
     }
     private void loadMovieData(String choice) {
         showMovieDataView();
-        //TODO get menu sort item from persistent data source
-        //set Prefecen sort moview value
+        //DONE get menu sort item from persistent data source
+        //set Preference sort moview value
         mSort_choice = MoviePreference.getSortOrder(this) ;//"top_rated";
 
         if (choice != null) {
             mSort_choice = choice;
-            // TODO set pref value
+            //DONE set pref value
 
         }
         // "popular" or "top_rated"
@@ -233,6 +258,41 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        String choice = mSort_choice;
+        switch (choice) {
+            case SORT_TOP_RATED:
+                menu.findItem(R.id.menu_highest_rated).setChecked(true);
+                break;
+            case SORT_POPULAR:
+                menu.findItem(R.id.menu_most_popular).setChecked(true);
+                break;
+            default:
+                menu.findItem(R.id.menu_highest_rated).setChecked(true);
+                break;
+        }
+        choice = mGrid_size;
+        switch (Integer.parseInt(choice)) {
+            case 2:
+                menu.findItem(R.id.menu_two).setChecked(true);
+                break;
+            case 3:
+                menu.findItem(R.id.menu_three).setChecked(true);
+                break;
+            case 4:
+                menu.findItem(R.id.menu_four).setChecked(true);
+                break;
+            case 5:
+                menu.findItem(R.id.menu_five).setChecked(true);
+                break;
+            default:
+                menu.findItem(R.id.menu_two).setChecked(true);
+                break;
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
     int id = item.getItemId();
         // "popular" or "top_rated"
@@ -243,19 +303,30 @@ public class MainActivity extends AppCompatActivity implements
                 Toast.makeText(getApplicationContext(), "Sort By Highest Rated", Toast.LENGTH_LONG).show();
                 mMovie = null;
                 mMovieAdapter.setData(null);
-                loadMovieData("top_rated");
+                MoviePreference.saveSortOrder(this, SORT_TOP_RATED);
+                loadMovieData(SORT_TOP_RATED);
                 return true;
             case R.id.menu_most_popular:
                 item.setChecked(true);
                 Toast.makeText(getApplicationContext(), "Sort By Most Popular", Toast.LENGTH_LONG).show();
                 mMovie = null;
                 mMovieAdapter.setData(null);
-                loadMovieData("popular");
+                MoviePreference.saveSortOrder(this, SORT_POPULAR);
+                loadMovieData(SORT_POPULAR);
+                return true;
+            case R.id.menu_fav:
+                item.setChecked(true);
+                Toast.makeText(getApplicationContext(), "Sort by your Favourite List", Toast.LENGTH_LONG).show();
+                mMovie = null;
+                mMovieAdapter.setData(null);
+                MoviePreference.saveSortOrder(this, getString(R.string.menu_fav));
+                loadMovieData(getString(R.string.menu_fav));
                 return true;
             case R.id.menu_two:
                 item.setChecked(true);
                 Toast.makeText(getApplicationContext(), "Change Grid size to 2", Toast.LENGTH_LONG).show();
-                mGrid_size = 2;
+                mGrid_size = "" + 2;
+                MoviePreference.saveGridSzie(this, mGrid_size);
                 if (NUMBER_OF_ITEMS_IN_GRIDVIEW != R.id.menu_two){
                     resizeGrid(2);
                 }
@@ -263,7 +334,8 @@ public class MainActivity extends AppCompatActivity implements
             case R.id.menu_three:
                 item.setChecked(true);
                 Toast.makeText(getApplicationContext(), "Change Grid size to 3", Toast.LENGTH_LONG).show();
-                mGrid_size = 3;
+                mGrid_size = "" + 3;
+                MoviePreference.saveGridSzie(this, mGrid_size);
                 if (NUMBER_OF_ITEMS_IN_GRIDVIEW != R.id.menu_three){
                     resizeGrid(3);
                 }
@@ -271,7 +343,8 @@ public class MainActivity extends AppCompatActivity implements
             case R.id.menu_four:
                 item.setChecked(true);
                 Toast.makeText(getApplicationContext(), "Change Grid size to 4", Toast.LENGTH_LONG).show();
-                mGrid_size = 4;
+                mGrid_size = "" + 4;
+                MoviePreference.saveGridSzie(this, mGrid_size);
                 if (NUMBER_OF_ITEMS_IN_GRIDVIEW != R.id.menu_four){
                     resizeGrid(4);
                 }
@@ -279,7 +352,8 @@ public class MainActivity extends AppCompatActivity implements
             case R.id.menu_five:
                 item.setChecked(true);
                 Toast.makeText(getApplicationContext(), "Change Grid size to 5", Toast.LENGTH_LONG).show();
-                mGrid_size = 5;
+                mGrid_size = "" + 5;
+                MoviePreference.saveGridSzie(this, mGrid_size);
                 if (NUMBER_OF_ITEMS_IN_GRIDVIEW != R.id.menu_five){
                     resizeGrid(5);
                 }

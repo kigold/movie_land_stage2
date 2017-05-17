@@ -10,9 +10,7 @@ import com.bignerdranch.android.movieland.data.MovieContract.MovieEntry;
  */
 
 public class MovieDbHelper extends SQLiteOpenHelper {
-
     public static final String DATABASE_NAME = "movie.db";
-
     private static final int DATABASE_VERSION = 1;
 
 
@@ -29,14 +27,12 @@ public class MovieDbHelper extends SQLiteOpenHelper {
 
 
                         MovieEntry._ID  + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-
-                        MovieEntry.COLUMN_ORIGINAL_TITLE       + " TEXT NOT NULL, "                 +
-
-                        MovieEntry.COLUMN_POPULARITY + " REAL NULL,"                  +
-
-                        MovieEntry.COLUMN_USER_RATING  + " REAL NULL, "                    +
-                        MovieEntry.COLUMN_POSTER_IMAGE + " TEXT NOT NULL, "                    +
-
+                        MovieEntry.COLUMN_ORIGINAL_TITLE       + " TEXT NOT NULL, " +
+                        MovieEntry.COLUMN_POPULARITY + " REAL NULL," +
+                        MovieEntry.COLUMN_USER_RATING  + " REAL NULL, " +
+                        MovieEntry.COLUMN_POSTER_IMAGE + " TEXT NOT NULL, "+
+                        MovieEntry.COLUMN_SYNOPSIS + " TEXT NOT NULL, " +
+                        MovieEntry.COLUMN_MOVIE_ID + " TEXT NOT NULL, " +
                         MovieEntry.COLUMN_RELEASE_DATE  + " TEXT NOT NULL);";
 
         sqLiteDatabase.execSQL(SQL_CREATE_MOVIE_TABLE);

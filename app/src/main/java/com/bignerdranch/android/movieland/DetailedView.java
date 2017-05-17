@@ -1,6 +1,9 @@
 package com.bignerdranch.android.movieland;
 
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
@@ -16,6 +19,8 @@ import android.widget.TextView;
 
 import com.bignerdranch.android.movieland.Adapter.ReviewAdapter;
 import com.bignerdranch.android.movieland.Adapter.TrailerAdapter;
+import com.bignerdranch.android.movieland.data.MovieContract;
+import com.bignerdranch.android.movieland.data.MovieProvider;
 import com.bignerdranch.android.movieland.dataType.MovieDataType;
 import com.bignerdranch.android.movieland.dataType.MovieExtraDetails;
 import com.bignerdranch.android.movieland.dataType.MovieReview;
@@ -36,6 +41,7 @@ public class DetailedView extends AppCompatActivity implements
     private final String MOVIE_DATA_FOR_INTENT = "MOVIE_DATA";
 
     private MovieDataType mMovie;
+    private ArrayList<String> mMoviesIds;
     private ArrayList<MovieReview> mMovieReview;
     private ArrayList<MovieTrailer> mMovieTrailer;
     private MovieExtraDetails mMovieExtraDetails;
@@ -43,7 +49,7 @@ public class DetailedView extends AppCompatActivity implements
     private ImageView mPoster;
     private TextView mErrorMessageReview;
     private TextView mErrorMessageTrailer;
-    private ImageButton mTrailerThumb;
+    private ImageButton mFavButton;
     private ProgressBar mProgressBarReview;
     private ProgressBar mProgressBarTrailer;
     private RecyclerView mReviewList;
@@ -57,7 +63,8 @@ public class DetailedView extends AppCompatActivity implements
     private final String ERROR_MESSAGE = "No Data Availabel";
     private final String BUNDLE_GRID_SIZE = "bundle_grid_size";
     private static final int REVIEW_LOADER_ID = 1;
-    private static final int TRAILER_LOADER_ID = 2;;
+    private static final int TRAILER_LOADER_ID = 2;
+    private MovieProvider mp;
 
 
     @Override
@@ -77,6 +84,7 @@ public class DetailedView extends AppCompatActivity implements
         mErrorMessageTrailer = (TextView) findViewById(R.id.tv_trailer_header);
         mProgressBarReview = (ProgressBar) findViewById(R.id.pb_progress_bar_review);
         mProgressBarTrailer = (ProgressBar) findViewById(R.id.pb_progress_bar_trailer);
+        mFavButton = (ImageButton) findViewById(R.id.ib_fav_button);
 
         mReviewList = (RecyclerView) findViewById(R.id.rv_review);
         mTrailerList = (RecyclerView) findViewById(R.id.rv_trailer);
@@ -119,6 +127,56 @@ public class DetailedView extends AppCompatActivity implements
         loadItems(BUNDLE_QUERY_REVIEW, "" + mMovie.getId());
         loadItems(BUNDLE_QUERY_VIDEO, "" + mMovie.getId());
 
+        //testnzon
+        //mp = new MovieProvider();
+
+        //test zone
+
+        //load fav movies into mMoview
+        mMoviesIds =  new ArrayList<>();
+        ArrayList<String> temp = getMoviesIds();
+        if (temp != null){
+            mMoviesIds = temp;
+        }
+
+        //set Fav Button to appropriate image if movies is in favorite database
+        if (mMoviesIds == null || mMoviesIds.size() < 1 || !mMoviesIds.contains(mMovie.getId())){
+            mFavButton.setImageResource(R.mipmap.btn_star_big_off);
+        }
+
+        mFavButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //disables
+                mFavButton.setEnabled(false);
+                //check if the movies is in fav list
+                if (mMoviesIds == null || mMoviesIds.size() < 1 || !mMoviesIds.contains(mMovie.getId())){
+                    // add to fav db
+                    addToFav();
+                    //add to list
+                    mMoviesIds.add("" + mMovie.getId());
+                    //change button image
+                    mFavButton.setImageResource(R.mipmap.btn_star_big_off);
+                }
+                if (mMoviesIds.contains(mMovie.getId())){
+                    //delete from db
+                    Uri uri =  MovieContract.MovieEntry.CONTEXT_URI;
+                    uri.buildUpon().appendPath("/" + mMovie.getId());
+                    getContentResolver().delete(uri, null, null);
+                    //delete from list
+                    mMoviesIds.remove("" + mMovie.getId());
+                    //change button image
+                    mFavButton.setImageResource(R.mipmap.btn_star_big_on);
+                }
+                else{
+
+                }
+                //enable
+                mFavButton.setEnabled(true);
+            }
+        });
+
+
 
     }
     private void loadItems(String query_type, String movie_id){
@@ -130,6 +188,34 @@ public class DetailedView extends AppCompatActivity implements
         }
         else if(query_type == BUNDLE_QUERY_REVIEW){
             getSupportLoaderManager().initLoader(REVIEW_LOADER_ID, bundle, this);
+        }
+    }
+
+    private ArrayList<String> getMoviesIds(){
+        //get all movies in Fav DatabaseSS
+        Cursor cursor = getContentResolver().query(MovieContract.MovieEntry.CONTEXT_URI, null, null, null, null);
+        //Cursor cursor = mp.query(MovieContract.MovieEntry.CONTEXT_URI, null, null, null, null);
+        //save all the movies id in a list
+        ArrayList<String> moviesIds = null;
+        while (cursor.moveToNext()){
+            String m = cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.MovieEntry.COLUMN_MOVIE_ID));
+            moviesIds.add(m);
+        }
+        return moviesIds;
+    }
+
+    private void addToFav() {
+        ContentValues values = new ContentValues();
+        values.put(MovieContract.MovieEntry.COLUMN_POSTER_IMAGE, mMovie.getPoster_image());
+        values.put(MovieContract.MovieEntry.COLUMN_POPULARITY, mMovie.getPopularity());
+        values.put(MovieContract.MovieEntry.COLUMN_USER_RATING, mMovie.getUser_rating());
+        values.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, mMovie.getRelease_date());
+        values.put(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE, mMovie.getOriginal_title());
+        values.put(MovieContract.MovieEntry.COLUMN_MOVIE_ID, mMovie.getId());
+
+        Uri uri = getContentResolver().insert(MovieContract.MovieEntry.CONTEXT_URI, values);
+        if(uri != null){
+
         }
     }
 
@@ -203,10 +289,10 @@ public class DetailedView extends AppCompatActivity implements
 
 
         if (data.getR() == null){
-            showErro(BUNDLE_QUERY_REVIEW);
+            //showErro(BUNDLE_QUERY_REVIEW);
         }else {mReviewAdapter.setData(data.getR());}
         if (data.getT() == null){
-            showErro(BUNDLE_QUERY_REVIEW);
+            //showErro(BUNDLE_QUERY_REVIEW);
         }else{mTrailerAdapter.setData(data.getT());
             }
     }
