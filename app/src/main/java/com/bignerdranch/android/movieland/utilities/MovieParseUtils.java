@@ -66,6 +66,9 @@ public class MovieParseUtils {
                                     ,cursor.getString(cursor.getColumnIndexOrThrow(MovieEntry.COLUMN_RELEASE_DATE))
                                     ,cursor.getString(cursor.getColumnIndexOrThrow(MovieEntry.COLUMN_POSTER_IMAGE))
                                     ,cursor.getDouble(cursor.getColumnIndexOrThrow(MovieEntry.COLUMN_POPULARITY)), null);
+            //Movie COnstructor appends the base url to the paster image, since its already appended, when the data is feched from
+            //the https sit
+            m.setPoster_image(cursor.getString(cursor.getColumnIndexOrThrow(MovieEntry.COLUMN_POSTER_IMAGE)));
             movie.add(m);
         }
         return movie;

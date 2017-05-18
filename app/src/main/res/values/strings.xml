@@ -4,6 +4,7 @@
     <string name="menu_fav">Favorite</string>
     <string name="review">Review</string>
     <string name="trailer">Trailer</string>
+    <string name="fav_info">Add Movies to  Favorite List</string>
     <string name="menu_sort">Sort Movie List</string>
     <string name="movie_sort_type">MOVIESORT</string>
     <string name="menu_grid_size">Grid Size</string>
