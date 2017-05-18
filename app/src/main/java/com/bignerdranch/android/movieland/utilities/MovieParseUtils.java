@@ -56,7 +56,7 @@ public class MovieParseUtils {
     }
 
     public static ArrayList<MovieDataType> getMovieFromFavorite (Cursor cursor){
-        ArrayList<MovieDataType> movie = null;
+        ArrayList<MovieDataType> movie = new ArrayList<>();
         while (cursor.moveToNext()){
 
             MovieDataType m = new MovieDataType(cursor.getInt(cursor.getColumnIndexOrThrow(MovieEntry.COLUMN_MOVIE_ID))

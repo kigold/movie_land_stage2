@@ -1,5 +1,6 @@
 package com.bignerdranch.android.movieland.Adapter;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -82,14 +83,22 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.MovieTra
             public void onClick(View view) {
                 //final int position = getView(position, view, parent).get(position);
                 Toast.makeText(view.getContext(), "Trailer Should be Playing now" ,Toast.LENGTH_SHORT).show();
-                Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(view.getTag().toString()));
-                view.getContext().startActivity(appIntent);
+                //Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(view.getTag().toString()));
+                //view.getContext().startActivity(webIntent);
+                Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.youtube.com/watch?v=" + view.getTag()));
+                Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + view.getTag()));
+                try {
+                    view.getContext().startActivity(appIntent);
+                } catch (ActivityNotFoundException ex) {
+                    view.getContext().startActivity(webIntent);
+                }
+
 
 
             }
         });
         holder.mTrailerName.setText(daMovie.getName());
-        holder.mTrailerButton.setTag(daMovie.getUrl());
+        holder.mTrailerButton.setTag(daMovie.getKey());
         Picasso.with(context)
                 .load(daMovie.getImgUrl())
                 .placeholder(R.mipmap.ic_launcher)

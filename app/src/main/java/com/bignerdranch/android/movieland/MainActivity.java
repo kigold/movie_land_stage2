@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements
     private String mGrid_size;
     private final String SORT_TOP_RATED = "top_rated";
     private final String SORT_POPULAR = "popular";
+    private final String SORT_FAV = "Favorite";
     private final String MOVIE_DATA_FOR_INTENT = "MOVIE_DATA";
     private final String BUNDLE_RECYCLER_LAYOUT = "bundle_recycle_layout";
     private final String BUNDLE_RECYCLER_MOVIEDATA = "bundle_movie_data";
@@ -124,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public ArrayList<MovieDataType> loadInBackground() {
                 URL movieReqestUrl = NetworkUtils.buildUrl(mSort_choice);
-                if (mSort_choice != getString(R.string.menu_fav)) {
+                if (! mSort_choice.equals(SORT_FAV)) {
                     try {
                         String jsonMovieResponse = NetworkUtils
                                 .getResponseFromHttpUrl(movieReqestUrl);
@@ -137,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements
                         return null;
                     }
                 }
-                else if (mSort_choice == getString(R.string.menu_fav)){
+                else if (mSort_choice.equals(SORT_FAV)){
                     try{
                         Cursor cursor = getContentResolver().query(MovieContract.MovieEntry.CONTEXT_URI, null, null, null, null);
                         /*MovieProvider mp = new MovieProvider();
@@ -196,14 +197,14 @@ public class MainActivity extends AppCompatActivity implements
         showMovieDataView();
         //DONE get menu sort item from persistent data source
         //set Preference sort moview value
-        mSort_choice = MoviePreference.getSortOrder(this) ;//"top_rated";
+        mSort_choice = MoviePreference.getSortOrder(this) ;
 
         if (choice != null) {
             mSort_choice = choice;
             //DONE set pref value
 
         }
-        // "popular" or "top_rated"
+        // "popular" or "top_rated" or Favourite
         Bundle bundle = new Bundle();
         bundle.putString(BUNDLE_SORT_CHOICE,mSort_choice);
         //fresh load
@@ -267,6 +268,9 @@ public class MainActivity extends AppCompatActivity implements
             case SORT_POPULAR:
                 menu.findItem(R.id.menu_most_popular).setChecked(true);
                 break;
+            case SORT_FAV:
+                menu.findItem(R.id.menu_fav).setChecked(true);
+                break;
             default:
                 menu.findItem(R.id.menu_highest_rated).setChecked(true);
                 break;
@@ -320,7 +324,7 @@ public class MainActivity extends AppCompatActivity implements
                 mMovie = null;
                 mMovieAdapter.setData(null);
                 MoviePreference.saveSortOrder(this, getString(R.string.menu_fav));
-                loadMovieData(getString(R.string.menu_fav));
+                loadMovieData(SORT_FAV);
                 return true;
             case R.id.menu_two:
                 item.setChecked(true);

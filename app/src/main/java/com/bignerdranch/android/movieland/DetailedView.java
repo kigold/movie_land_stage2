@@ -140,7 +140,7 @@ public class DetailedView extends AppCompatActivity implements
         }
 
         //set Fav Button to appropriate image if movies is in favorite database
-        if (mMoviesIds == null || mMoviesIds.size() < 1 || !mMoviesIds.contains(mMovie.getId())){
+        if (!mMoviesIds.contains("" + mMovie.getId())){
             mFavButton.setImageResource(R.mipmap.btn_star_big_off);
         }
 
@@ -148,28 +148,28 @@ public class DetailedView extends AppCompatActivity implements
             @Override
             public void onClick(View v) {
                 //disables
+                String b = "" + mMovie.getId();
+                Boolean t = mMoviesIds.contains(b);
                 mFavButton.setEnabled(false);
                 //check if the movies is in fav list
-                if (mMoviesIds == null || mMoviesIds.size() < 1 || !mMoviesIds.contains(mMovie.getId())){
+                if (!mMoviesIds.contains(b)){
                     // add to fav db
                     addToFav();
                     //add to list
                     mMoviesIds.add("" + mMovie.getId());
                     //change button image
-                    mFavButton.setImageResource(R.mipmap.btn_star_big_off);
+                    mFavButton.setImageResource(R.mipmap.btn_star_big_on);
                 }
-                if (mMoviesIds.contains(mMovie.getId())){
+                else {
                     //delete from db
                     Uri uri =  MovieContract.MovieEntry.CONTEXT_URI;
-                    uri.buildUpon().appendPath("/" + mMovie.getId());
-                    getContentResolver().delete(uri, null, null);
+                    //uri.buildUpon().appendPath("/" + mMovie.getId());
+                    String[] queryParam = {""+ mMovie.getId()};
+                    getContentResolver().delete(uri, MovieContract.MovieEntry.COLUMN_MOVIE_ID +  " = ?", queryParam);
                     //delete from list
                     mMoviesIds.remove("" + mMovie.getId());
                     //change button image
-                    mFavButton.setImageResource(R.mipmap.btn_star_big_on);
-                }
-                else{
-
+                    mFavButton.setImageResource(R.mipmap.btn_star_big_off);
                 }
                 //enable
                 mFavButton.setEnabled(true);
@@ -196,7 +196,7 @@ public class DetailedView extends AppCompatActivity implements
         Cursor cursor = getContentResolver().query(MovieContract.MovieEntry.CONTEXT_URI, null, null, null, null);
         //Cursor cursor = mp.query(MovieContract.MovieEntry.CONTEXT_URI, null, null, null, null);
         //save all the movies id in a list
-        ArrayList<String> moviesIds = null;
+        ArrayList<String> moviesIds = new ArrayList<>();
         while (cursor.moveToNext()){
             String m = cursor.getString(cursor.getColumnIndexOrThrow(MovieContract.MovieEntry.COLUMN_MOVIE_ID));
             moviesIds.add(m);
@@ -209,6 +209,7 @@ public class DetailedView extends AppCompatActivity implements
         values.put(MovieContract.MovieEntry.COLUMN_POSTER_IMAGE, mMovie.getPoster_image());
         values.put(MovieContract.MovieEntry.COLUMN_POPULARITY, mMovie.getPopularity());
         values.put(MovieContract.MovieEntry.COLUMN_USER_RATING, mMovie.getUser_rating());
+        values.put(MovieContract.MovieEntry.COLUMN_SYNOPSIS, mMovie.getSynopsis());
         values.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, mMovie.getRelease_date());
         values.put(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE, mMovie.getOriginal_title());
         values.put(MovieContract.MovieEntry.COLUMN_MOVIE_ID, mMovie.getId());

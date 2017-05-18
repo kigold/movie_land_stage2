@@ -1,6 +1,7 @@
 package com.bignerdranch.android.movieland.data;
 
 import android.content.ContentProvider;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
@@ -136,7 +137,26 @@ public class MovieProvider  extends ContentProvider{
 
     @Nullable
     @Override
-    public Uri insert(Uri uri, ContentValues values) {
+    public Uri insert(Uri uri, ContentValues values)
+    {
+        Uri resUri;
+        final SQLiteDatabase db = mOpenHelper.getReadableDatabase();
+        switch (sUriMatcher.match(uri)){
+            case CODE_MOVIE: {
+                try {
+                    long resId = db.insert(MovieContract.MovieEntry.TABLE_NAME, null, values);
+                    if (resId > 0)
+                        resUri = ContentUris.withAppendedId(MovieContract.MovieEntry.CONTEXT_URI, resId);
+                    else
+                        resUri = null;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            }
+            default:
+                throw new UnsupportedOperationException("Unknown uri: " + uri);
+            }
         return null;
     }
 
@@ -170,6 +190,13 @@ public class MovieProvider  extends ContentProvider{
                         +  " = " + id +
                                 (!TextUtils.isEmpty(selection) ?
                        " AND (" + selection + ')' : ""), selectionArgs);
+                break;
+            case CODE_MOVIE:
+                count = db.delete(
+                        MovieContract.MovieEntry.TABLE_NAME,
+                        selection,
+                        selectionArgs);
+
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
